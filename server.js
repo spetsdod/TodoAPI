@@ -50,6 +50,20 @@ app.post('/todos', function (req, res) {
     res.json(body);
 });
 
+app.delete('/todos/:id', function (req, res) {
+    var todoId = parseInt(req.params.id, 10);
+    var matchedItem = _.findWhere(todoItems, {id: todoId});
+
+    if (matchedItem) {
+        todoItems = _.without(todoItems, matchedItem);
+        res.json(matchedItem);
+
+        // res.status(200).send('Item deleted. ('+JSON.stringify(matchedItem)+')');
+    } else {
+        res.status(404).json({"error": "No valid item ID"});
+    }
+});
+
 app.listen(PORT, function() {
     console.log('Express listening on '+PORT+'.');
 });
