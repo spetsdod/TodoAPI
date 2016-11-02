@@ -1,5 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
+
 var app = express();
 var PORT = process.env.PORT || 3000;
 
@@ -18,17 +20,11 @@ app.get('/todos', function(req, res){
 app.get('/todos/nextid', function(req, res) {
     res.json(todoNextId);
 });
+
+// refactor with underscore
 app.get('/todos/:id', function(req, res){
     var todoId = parseInt(req.params.id, 10);
-    var matchedItem;
-
-    console.log('Requesting id: '+todoId+'.');
-
-    todoItems.forEach(function(todo){
-        if (todo.id === todoId) {
-            matchedItem = todo;
-        }
-    });
+    var matchedItem = _.findWhere(todoItems, {id: todoId});
 
     if (matchedItem) {
         res.json(matchedItem);
@@ -38,10 +34,15 @@ app.get('/todos/:id', function(req, res){
     }
 });
 
-// POST /todos
-
 app.post('/todos', function (req, res) {
-    var body = req.body;
+    var body = _.pick(req.body, 'description', 'completed');
+    body.description = body.description.trim();
+
+    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.length === 0) {
+        return res.status(400).send();
+    }
+
+    body = _.pick(body, 'description', 'completed');
 
     body.id = todoNextId++;
     todoItems.push (body);
